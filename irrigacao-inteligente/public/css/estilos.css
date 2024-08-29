@@ -1,0 +1,111 @@
+/* public/css/estilos.css */
+body {
+    background-color: #f8f9fa;
+}
+.container {
+    margin-top: 50px;
+}
+
+
+/* public/css/estilos.css */
+
+/* Estilo para o botão de login */
+.btn-primary {
+    background-color: #28a745; /* Cor verde */
+    border: 1px solid #28a745; /* Borda verde */
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #218838; /* Verde mais escuro no hover */
+    border-color: #1e7e34; /* Borda mais escura no hover */
+}
+
+/* Estilo para botões link */
+.btn-link {
+    color: #28a745; /* Cor verde */
+    border: 1px solid #28a745; /* Borda verde */
+    padding: 5px 10px;
+    border-radius: 3px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.btn-link:hover {
+    color: #218838; /* Verde mais escuro no hover */
+    border-color: #1e7e34; /* Borda mais escura no hover */
+}
+
+/* public/css/estilos.css */
+
+/* public/css/estilos.css */
+
+/* Estilos para o cabeçalho */
+header {
+    background-color: #343a40; /* Cor de fundo escura */
+}
+
+header h1 {
+    margin: 0;
+}
+
+/* Estilos para o rodapé */
+footer {
+    background-color: #343a40; /* Cor de fundo escura */
+    position: relative; /* Altere de absolute para relative */
+    bottom: 0;
+    width: 100%;
+    padding: 10px 0; /* Adiciona algum espaço interno */
+}
+
+
+footer p {
+    margin: 0;
+}
+
+/* Estilo para o corpo da página */
+body {
+    min-height: 100vh; /* Garante que a altura mínima do corpo cubra toda a tela */
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1;
+}
+
+/* Container da tabela com rolagem horizontal */
+.table-container {
+    overflow-x: auto; /* Adiciona rolagem horizontal quando necessário */
+    margin-bottom: 20px; /* Espaço abaixo da tabela para evitar sobreposição com o rodapé */
+    border: 1px solid #ddd; /* Borda opcional ao redor da tabela */
+    border-radius: 4px; /* Borda arredondada opcional */
+}
+
+/* Garante que a tabela se ajuste dentro do contêiner */
+.table {
+    min-width: 600px; /* Ajuste conforme a largura mínima desejada para a tabela */
+}
+
+
+/* public/css/estilos.css */
+
+/* Estilo para o corpo da página */
+body {
+    min-height: 100vh; /* Garante que a altura mínima do corpo cubra toda a tela */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Container da tabela com rolagem horizontal */
+.table-container {
+    overflow-x: auto; /* Adiciona rolagem horizontal quando necessário */
+    margin-bottom: 20px; /* Espaço abaixo da tabela para evitar sobreposição com o rodapé */
+    border: 1px solid #ddd; /* Borda opcional ao redor da tabela */
+    border-radius: 4px; /* Borda arredondada opcional */
+}
+
+/* Garante que a tabela se ajuste dentro do contêiner */
+.table {
+    min-width: 600px; /* Ajuste conforme a largura mínima desejada para a tabela */
+}
