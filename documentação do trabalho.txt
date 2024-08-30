@@ -1,0 +1,1243 @@
+Migraçoes do banco de dados:
+
+2024_08_28_175045_create_usuarios_table.php(<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('usuarios', function (Blueprint $table) {
+            $table->id();
+            $table->string('nome');
+            $table->string('email')->unique();
+            $table->string('cpf')->unique();
+            $table->string('senha');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('usuarios');
+    }
+};
+),
+2024_08_28_212143_create_sensors_table.php(<?php
+
+// database/migrations/xxxx_xx_xx_create_sensors_table.php
+// database/migrations/2024_08_28_212143_create_sensors_table.php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateSensorsTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('sensors', function (Blueprint $table) {
+            $table->id();
+            $table->string('descricao'); // Campo para a descrição do sensor
+            $table->decimal('umidade_minima', 5, 2);
+            $table->decimal('umidade_maxima', 5, 2);
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('sensors');
+    }
+}
+
+),
+2024_08_28_212221_create_agendamentos_table.php(<?php
+// database/migrations/xxxx_xx_xx_create_agendamentos_table.php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateAgendamentosTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('agendamentos', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('sensor_id')->constrained('sensors')->onDelete('cascade');
+            $table->time('horario_inicio');
+            $table->time('duracao');
+            $table->tinyInteger('dia_semana');
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('agendamentos');
+    }
+}
+),
+Agora vou enviar as migraçoes que usei para fazer pequenas alteraçoes nas tabelas:
+
+2024_08_29_134539_update_sensors_table.php(<?php
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class UpdateSensorsTable extends Migration
+{
+    public function up()
+    {
+        Schema::table('sensors', function (Blueprint $table) {
+            // Remover as colunas que não serão mais utilizadas
+            $table->dropColumn('identificador');
+            $table->dropColumn('nome');
+            
+            // Adicionar a nova coluna "descrição"
+            $table->string('descricao')->after('id');
+        });
+    }
+
+    public function down()
+    {
+        Schema::table('sensors', function (Blueprint $table) {
+            // Adicionar novamente as colunas removidas caso seja necessário reverter
+            $table->string('identificador')->unique();
+            $table->string('nome');
+            
+            // Remover a coluna "descrição"
+            $table->dropColumn('descricao');
+        });
+    }
+}
+),
+2024_08_29_013149_update_agendamentos_table.php(<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class UpdateAgendamentosTable extends Migration
+{
+    public function up()
+    {
+        Schema::table('agendamentos', function (Blueprint $table) {
+            // Alterando o tipo da coluna 'horario_inicio' para 'time'
+            $table->time('horario_inicio')->change();
+            // Alterando o tipo da coluna 'dia_semana' para 'string'
+            $table->string('dia_semana')->change();
+        });
+    }
+
+    public function down()
+    {
+        Schema::table('agendamentos', function (Blueprint $table) {
+            // Revertendo as alterações se necessário
+            $table->time('horario_inicio')->change();
+            $table->tinyInteger('dia_semana')->change();
+        });
+    }
+}
+),
+2024_08_29_015026_alter_dia_semana_to_json_in_agendamentos_table.php(<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class AlterDiaSemanaToJsonInAgendamentosTable extends Migration
+{
+    public function up()
+    {
+        Schema::table('agendamentos', function (Blueprint $table) {
+            // Alterar o campo para JSON
+            $table->json('dia_semana')->change();
+        });
+    }
+
+    public function down()
+    {
+        Schema::table('agendamentos', function (Blueprint $table) {
+            // Reverter para LONGTEXT
+            $table->longText('dia_semana')->change();
+        });
+    }
+}
+),
+Agora vou enviar os qrquivos de modeleo:
+Agendamento.php(<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class AlterDiaSemanaToJsonInAgendamentosTable extends Migration
+{
+    public function up()
+    {
+        Schema::table('agendamentos', function (Blueprint $table) {
+            // Alterar o campo para JSON
+            $table->json('dia_semana')->change();
+        });
+    }
+
+    public function down()
+    {
+        Schema::table('agendamentos', function (Blueprint $table) {
+            // Reverter para LONGTEXT
+            $table->longText('dia_semana')->change();
+        });
+    }
+}
+),
+Sensor.php(<?php
+
+// app/Models/Sensor.php
+
+// app/Models/Sensor.php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Sensor extends Model
+{
+    use HasFactory;
+
+    // Defina os campos que podem ser preenchidos
+    protected $fillable = [
+        'descricao',
+        'umidade_minima',
+        'umidade_maxima',
+    ];
+
+    // Define a tabela associada ao modelo
+    protected $table = 'sensors';
+
+    // Definindo o relacionamento "hasMany" com o modelo Agendamento
+    public function agendamentos()
+    {
+        return $this->hasMany(Agendamento::class);
+    }
+}
+),
+Usuario.php(<?php
+
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+
+class Usuario extends Authenticatable
+{
+    use Notifiable;
+
+    // Defina os atributos que são atribuíveis em massa
+    protected $fillable = [
+        'nome', 'email', 'cpf', 'senha',
+    ];
+
+    // Especifique os atributos que devem ser ocultados para arrays
+    protected $hidden = [
+        'senha', 'remember_token',
+    ];
+
+    // Defina o nome da coluna de senha
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+}
+),
+
+agora os arquivos de controladores:
+
+AgendamentoController.php(<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Agendamento;
+
+class AgendamentoController extends Controller
+{
+    public function store(Request $request)
+    {
+        // Validar os dados do formulário
+        $request->validate([
+            'sensor_id' => 'required|exists:sensors,id',
+            'horario_inicio' => 'required|date_format:H:i',
+            'duracao' => 'required|integer|min:1',
+            'dia_da_semana' => 'required|array',
+            'dia_da_semana.*' => 'string',
+        ]);
+
+        // Converter a duração de minutos para segundos
+        $duracaoEmSegundos = $request->input('duracao') * 60;
+
+        // Criar um novo agendamento
+        Agendamento::create([
+            'sensor_id' => $request->input('sensor_id'),
+            'horario_inicio' => $request->input('horario_inicio'),
+            'duracao' => gmdate('H:i:s', $duracaoEmSegundos), // Formato 'H:i:s' para o banco de dados
+            'dia_semana' => json_encode($request->input('dia_da_semana')), // Armazenar os dias da semana como JSON
+        ]);
+
+        // Redirecionar com uma mensagem de sucesso
+        return redirect()->route('sensor.listar')->with('success', 'Agendamento criado com sucesso.');
+    }
+
+        // Excluir um agendamento específico
+        public function destroy($id)
+        {
+            // Encontrar o agendamento pelo ID
+            $agendamento = Agendamento::findOrFail($id);
+    
+            // Excluir o agendamento
+            $agendamento->delete();
+    
+            // Redirecionar de volta para a lista de agendamentos com uma mensagem de sucesso
+            return redirect()->route('sensor.agendamentos', $agendamento->sensor_id)->with('success', 'Agendamento excluído com sucesso.');
+        }
+
+    
+}
+),
+ConsultarTemperaturaController.php(<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+
+class ConsultarTemperaturaController extends Controller
+{
+    public function exibirFormulario()
+    {
+        return view('consultar_temperatura');
+    }
+
+    public function consultarTemperatura(Request $request)
+    {
+        $cidade = $request->input('cidade');
+        $pais = $request->input('pais');
+
+        if (!$cidade || !$pais) {
+            return view('consultar_temperatura', ['erro' => 'Cidade e país são obrigatórios.']);
+        }
+
+        try {
+            // Consultar coordenadas
+            $response = Http::withHeaders([
+                'X-Api-Key' => env('API_KEY')
+            ])->get(env('API_URL'), [
+                'city' => $cidade,
+                'country' => $pais,
+            ]);
+
+            if (!$response->successful()) {
+                return view('consultar_temperatura', ['erro' => 'Erro ao consultar a API de Geocoding: ' . $response->body()]);
+            }
+
+            $coordenadas = $response->json();
+
+            if (isset($coordenadas[0])) {
+                $latitude = $coordenadas[0]['latitude'];
+                $longitude = $coordenadas[0]['longitude'];
+
+                // Consultar temperatura
+                $weatherApiUrl = "https://api.open-meteo.com/v1/forecast?latitude=$latitude&longitude=$longitude&current=temperature_2m";
+                $weatherResponse = Http::get($weatherApiUrl);
+
+                if (!$weatherResponse->successful()) {
+                    return view('consultar_temperatura', ['erro' => 'Erro ao consultar a API de previsão do tempo: ' . $weatherResponse->body()]);
+                }
+
+                $weatherData = $weatherResponse->json();
+
+                if (isset($weatherData['current'])) {
+                    $temperaturaAtual = $weatherData['current']['temperature_2m'];
+
+                    return view('consultar_temperatura', [
+                        'cidade' => $cidade,
+                        'temperaturaAtual' => $temperaturaAtual,
+                    ]);
+                } else {
+                    return view('consultar_temperatura', [
+                        'cidade' => $cidade,
+                        'erro' => 'Dados de temperatura não disponíveis.'
+                    ]);
+                }
+            }
+
+            return view('consultar_temperatura', ['erro' => 'Coordenadas não encontradas.']);
+        } catch (\Exception $e) {
+            return view('consultar_temperatura', ['erro' => 'Erro ao consultar a API: ' . $e->getMessage()]);
+        }
+    }
+}
+),
+SensorController.php(<?php
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Sensor;
+use App\Models\Agendamento;
+
+class SensorController extends Controller
+{
+    // Mostrar o formulário para adicionar um sensor
+    public function showAddForm()
+    {
+        return view('formulario_adicionar_sensor');
+    }
+
+    // Salvar o novo sensor no banco de dados
+    public function store(Request $request)
+    {
+        $request->validate([
+            'descricao' => 'required|string|max:255',
+            'umidade_minima' => 'required|numeric',
+            'umidade_maxima' => 'required|numeric',
+        ]);
+
+        // Criar o novo sensor
+        Sensor::create([
+            'descricao' => $request->input('descricao'),
+            'umidade_minima' => $request->input('umidade_minima'),
+            'umidade_maxima' => $request->input('umidade_maxima'),
+        ]);
+
+        // Redirecionar para a página de listagem com uma mensagem de sucesso
+        return redirect()->route('sensor.listar')->with('success', 'Sensor adicionado com sucesso.');
+    }
+
+    // Listar todos os sensores
+    public function index()
+    {
+        $sensores = Sensor::all();
+        return view('lista_sensores_cadastrados', compact('sensores'));
+    }
+
+    // Configurar um sensor específico
+    public function configurar($id)
+    {
+        $sensor = Sensor::findOrFail($id);
+        return view('configuracao_sensor_especifico', compact('sensor'));
+    }
+
+    // Criar um agendamento para um sensor específico
+    public function agendar($id)
+    {
+        $sensor = Sensor::findOrFail($id);
+        return view('formulario_criar_agendamento_sensor', compact('sensor'));
+    }
+
+    // Atualizar a faixa de umidade de um sensor específico
+    public function update(Request $request, $id)
+    {
+        // Validação dos dados do formulário
+        $request->validate([
+            'descricao' => 'required|string|max:255',
+            'umidade_minima' => 'required|numeric|min:0',
+            'umidade_maxima' => 'required|numeric|min:0',
+        ]);
+    
+        // Encontrar o sensor pelo ID
+        $sensor = Sensor::findOrFail($id);
+    
+        // Atualizar os dados do sensor
+        $sensor->descricao = $request->input('descricao');
+        $sensor->umidade_minima = $request->input('umidade_minima');
+        $sensor->umidade_maxima = $request->input('umidade_maxima');
+        $sensor->save();
+    
+        // Redirecionar para a lista de sensores com uma mensagem de sucesso
+        return redirect()->route('sensor.listar')->with('success', 'Sensor atualizado com sucesso.');
+    }
+
+    // Listar agendamentos de um sensor específico
+    public function listarAgendamentos($id)
+    {
+        // Buscar o sensor pelo ID
+        $sensor = Sensor::findOrFail($id);
+
+        // Buscar agendamentos associados a esse sensor
+        $agendamentos = $sensor->agendamentos; // Utilize o relacionamento definido no modelo
+
+        // Retornar a view com os dados do sensor e os agendamentos
+        return view('lista_agendamentos_sensor', compact('sensor', 'agendamentos'));
+    }
+
+    // Excluir um sensor e seus agendamentos associados
+    public function destroy($id)
+    {
+        // Encontre o sensor pelo ID
+        $sensor = Sensor::findOrFail($id);
+
+        // Exclua todos os agendamentos associados
+        $sensor->agendamentos()->delete();
+
+        // Exclua o sensor
+        $sensor->delete();
+
+        // Redirecione de volta para a lista de sensores com uma mensagem de sucesso
+        return redirect()->route('sensor.listar')->with('success', 'Sensor e seus agendamentos foram excluídos com sucesso.');
+    }
+}
+),
+UsuarioController.php(<?php
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Usuario;
+
+class UsuarioController extends Controller
+{
+    // Mostrar o formulário de login
+    public function showLogin()
+    {
+        return view('login');
+    }
+
+    public function login(Request $request)
+    {
+        $email = $request->input('email');
+        $senha = $request->input('senha');
+    
+        $usuario = Usuario::where('email', $email)->where('senha', $senha)->first();
+    
+        if ($usuario) {
+            // Login bem-sucedido
+            return view('boas-vindas', ['nome' => $usuario->nome]);
+        } else {
+            // Credenciais inválidas
+            return redirect()->back()->withErrors(['email' => 'Credenciais inválidas.']);
+        }
+    }
+    
+    // Mostrar o formulário de registro
+    public function showRegister()
+    {
+        return view('register');
+    }
+
+    // Processar o cadastro de um usuário
+    public function register(Request $request)
+    {
+        $request->validate([
+            'nome' => 'required|string|max:255',
+            'email' => 'required|email|unique:usuarios',
+            'cpf' => 'required|string|unique:usuarios',
+            'senha' => 'required|string|min:8',
+        ]);
+
+        // Criar o usuário sem criptografia de senha
+        Usuario::create([
+            'nome' => $request->nome,
+            'email' => $request->email,
+            'cpf' => $request->cpf,
+            'senha' => $request->senha, // senha salva como texto simples
+        ]);
+
+        return redirect()->route('login')->with('success', 'Usuário cadastrado com sucesso!');
+    }
+
+    // Mostrar a página de boas-vindas
+    public function showBoasVindas()
+    {
+        // Obtendo o nome do usuário logado (exemplo)
+        $nome = auth()->user() ? auth()->user()->name : 'Visitante';
+
+        // Retornando a view com a variável $nome
+        return view('boas-vindas', ['nome' => $nome]);
+    }
+}
+),
+
+Agora o arquivo de rotas web.php(<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\SensorController;
+use App\Http\Controllers\AgendamentoController;
+use App\Http\Controllers\ConsultarTemperaturaController;
+
+// Redirecionar a raiz para a página de login
+Route::get('/', function () {
+    return redirect('/login');
+});
+
+// Rotas para autenticação
+Route::get('/login', [UsuarioController::class, 'showLogin'])->name('login');
+Route::post('/login', [UsuarioController::class, 'login'])->name('login.post');
+Route::get('/register', [UsuarioController::class, 'showRegister'])->name('register');
+Route::post('/register', [UsuarioController::class, 'register'])->name('register.post');
+
+// Rota para a tela de boas-vindas
+Route::get('/boas-vindas', [UsuarioController::class, 'showBoasVindas'])->name('boas-vindas');
+
+// Rotas para gerenciamento de sensores
+Route::get('/sensores/adicionar', [SensorController::class, 'showAddForm'])->name('sensor.adicionar');
+Route::post('/sensores', [SensorController::class, 'store'])->name('sensor.store');
+Route::get('/sensores', [SensorController::class, 'index'])->name('sensor.listar'); // Atualize para corresponder ao nome da rota
+Route::get('/sensores/{id}/configurar', [SensorController::class, 'configurar'])->name('sensor.configurar');
+
+// Rotas para agendamentos
+Route::get('/sensores/{id}/agendar', [SensorController::class, 'agendar'])->name('sensor.agendar');
+Route::post('/agendamentos', [AgendamentoController::class, 'store'])->name('agendamento.store');
+
+// Rota para atualizar a faixa de umidade de um sensor específico
+Route::put('/sensores/{id}', [SensorController::class, 'update'])->name('sensor.atualizar');
+
+// Rota para listar agendamentos de um sensor específico
+Route::get('/sensor/{id}/agendamentos', [SensorController::class, 'listarAgendamentos'])->name('sensor.agendamentos');
+
+// Rotas para agendamentos
+Route::delete('/agendamentos/{id}', [AgendamentoController::class, 'destroy'])->name('agendamento.destroy');
+
+// Excluir sensor
+Route::delete('/sensores/{id}', [SensorController::class, 'destroy'])->name('sensor.excluir');
+
+// Rotas para consultar a temperatura
+Route::get('/consultar-temperatura', [ConsultarTemperaturaController::class, 'exibirFormulario'])->name('consultar-temperatura');
+Route::post('/consultar-temperatura', [ConsultarTemperaturaController::class, 'consultarTemperatura']);
+),
+Agora os arquivos de views:
+login.blade.php(<!-- resources/views/login.blade.php -->
+
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">Login</div>
+
+                <div class="card-body">
+                    <!-- Exibir mensagens de erro -->
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <!-- Formulário de login -->
+                    <form method="POST" action="{{ route('login.post') }}">
+                        @csrf
+
+                        <div class="form-group row">
+                            <label for="email" class="col-md-4 col-form-label text-md-right">E-Mail Address</label>
+
+                            <div class="col-md-6">
+                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autofocus>
+
+                                @error('email')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="password" class="col-md-4 col-form-label text-md-right">Password</label>
+
+                            <div class="col-md-6">
+                                <input id="password" type="password" class="form-control @error('senha') is-invalid @enderror" name="senha" required>
+
+                                @error('senha')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row mb-0">
+                            <div class="col-md-6 offset-md-4">
+                                <button type="submit" class="btn btn-success">
+                                    Login
+                                </button>
+
+                                <!-- Botão de Cadastro -->
+                                <a class="btn btn-primary" href="{{ route('register') }}">
+                                    Cadastrar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+),
+register.blade.php(<!-- resources/views/register.blade.php -->
+
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">Cadastro</div>
+
+                <div class="card-body">
+                    <form method="POST" action="{{ route('register.post') }}">
+                        @csrf
+
+                        <div class="form-group row">
+                            <label for="nome" class="col-md-4 col-form-label text-md-right">Nome</label>
+                            <div class="col-md-6">
+                                <input id="nome" type="text" class="form-control @error('nome') is-invalid @enderror" name="nome" value="{{ old('nome') }}" required autofocus>
+
+                                @error('nome')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="email" class="col-md-4 col-form-label text-md-right">E-Mail Address</label>
+                            <div class="col-md-6">
+                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required>
+
+                                @error('email')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="cpf" class="col-md-4 col-form-label text-md-right">CPF</label>
+                            <div class="col-md-6">
+                                <input id="cpf" type="text" class="form-control @error('cpf') is-invalid @enderror" name="cpf" value="{{ old('cpf') }}" required>
+
+                                @error('cpf')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="senha" class="col-md-4 col-form-label text-md-right">Senha</label>
+                            <div class="col-md-6">
+                                <input id="senha" type="password" class="form-control @error('senha') is-invalid @enderror" name="senha" required>
+
+                                @error('senha')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row mb-0">
+                            <div class="col-md-6 offset-md-4">
+                                <button type="submit" class="btn btn-success">
+                                    Cadastrar
+                                </button>
+
+                                <a class="btn btn-primary" href="{{ route('login') }}">
+                                    Voltar para o Login
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+),
+boas-vindas.blade.php(<!-- resources/views/boas-vindas.blade.php -->
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">Tela de Boas-Vindas</div>
+
+                <div class="card-body">
+                    <!-- Botão para ver a lista de sensores -->
+                    <a href="{{ route('sensor.listar') }}" class="btn btn-primary mb-3">Ver Lista de Sensores</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+),
+lista_sensores_cadastrados.blade.php(<!-- resources/views/lista_sensores_cadastrados.blade.php -->
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">Lista de Sensores</div>
+
+                <div class="card-body">
+                    <!-- Exibir mensagem de sucesso, se houver -->
+                    @if (session('success'))
+                        <div class="alert alert-success">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    
+                    <!-- Botões -->
+                    <!-- Botão de Adicionar Sensor -->
+                    <a href="{{ route('sensor.adicionar') }}" class="btn btn-primary mb-3">Adicionar Sensor</a>
+                    <!-- Botão para consultar temperatura -->
+                    <a href="{{ route('consultar-temperatura') }}" class="btn btn-secondary mb-3">Consultar Temperatura</a>
+                    <!-- Container para rolagem da tabela -->
+                    <div class="table-container">
+                        <!-- Tabela para listar sensores -->
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Descrição</th> <!-- Alterado de "Nome" para "Descrição" -->
+                                    <th>Umidade Mínima</th>
+                                    <th>Umidade Máxima</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($sensores as $sensor)
+                                <tr>
+                                    <td>{{ $sensor->id }}</td>
+                                    <td>{{ $sensor->descricao }}</td> <!-- Alterado de "nome" para "descricao" -->
+                                    <td>{{ $sensor->umidade_minima }}</td>
+                                    <td>{{ $sensor->umidade_maxima }}</td>
+                                    <td>
+                                        <!-- Botão para configurar o sensor -->
+                                        <a href="{{ route('sensor.configurar', $sensor->id) }}" class="btn btn-info">Configurar</a>
+                                        
+                                        <!-- Botão para ver agendamentos -->
+                                        <a href="{{ route('sensor.agendamentos', $sensor->id) }}" class="btn btn-primary">Ver Agendamentos</a>
+
+                                        <!-- Formulário de exclusão -->
+                                        <form action="{{ route('sensor.excluir', $sensor->id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir este sensor e todos os agendamentos associados?')">Excluir</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+),
+configuracao_sensor_especifico.blade.php(<!-- resources/views/configuracao_sensor_especifico.blade.php -->
+
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">Configuração do Sensor</div>
+
+                <div class="card-body">
+                    <!-- Formulário para editar a faixa de umidade e descrição -->
+                    <form method="POST" action="{{ route('sensor.atualizar', $sensor->id) }}">
+                        @csrf
+                        @method('PUT')
+                        
+                        <div class="form-group">
+                            <label for="descricao">Descrição</label>
+                            <input type="text" name="descricao" id="descricao" class="form-control" value="{{ $sensor->descricao }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="umidade_minima">Umidade Mínima</label>
+                            <input type="number" step="0.01" name="umidade_minima" id="umidade_minima" class="form-control" value="{{ $sensor->umidade_minima }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="umidade_maxima">Umidade Máxima</label>
+                            <input type="number" step="0.01" name="umidade_maxima" id="umidade_maxima" class="form-control" value="{{ $sensor->umidade_maxima }}" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Atualizar Sensor</button>
+                    </form>
+
+                    <!-- Botão para criar agendamento -->
+                    <div class="mt-4">
+                        <a href="{{ route('sensor.agendar', $sensor->id) }}" class="btn btn-success">Criar Agendamento</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+),
+consultar_temperatura.blade.php(<!-- resources/views/consultar_temperatura.blade.php -->
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">Consultar Temperatura</div>
+
+                <div class="card-body">
+                    <!-- Botões de navegação -->
+                    <div class="mb-3">
+                        <a href="{{ route('sensor.listar') }}" class="btn btn-secondary">Voltar para Lista de Sensores</a>
+                    </div>
+
+                    <!-- Formulário de consulta de temperatura -->
+                    <form action="{{ route('consultar-temperatura') }}" method="POST" class="mb-4">
+                        @csrf
+                        <div class="form-group">
+                            <label for="cidade">Cidade:</label>
+                            <input type="text" id="cidade" name="cidade" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pais">País:</label>
+                            <input type="text" id="pais" name="pais" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Consultar Temperatura</button>
+                    </form>
+
+                    <!-- Exibir resultado -->
+                    @if (isset($temperaturaAtual))
+                        <div class="alert alert-info">
+                            <h4>Temperatura Atual:</h4>
+                            <p>Temperatura em {{ $cidade }}: {{ $temperaturaAtual }}°C</p>
+                        </div>
+                    @elseif (isset($erro))
+                        <div class="alert alert-danger">
+                            <p>{{ $erro }}</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+),
+formulario_adicionar_sensor.blade.php(<!-- resources/views/formulario_adicionar_sensor.blade.php -->
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">Adicionar Sensor</div>
+
+                <div class="card-body">
+                    <!-- Exibir mensagens de erro de validação -->
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <!-- Formulário para adicionar um novo sensor -->
+                    <form action="{{ route('sensor.store') }}" method="POST">
+                        @csrf
+                        <div class="form-group">
+                            <label for="descricao">Descrição:</label>
+                            <input type="text" id="descricao" name="descricao" class="form-control" value="{{ old('descricao') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="umidade_minima">Umidade Mínima:</label>
+                            <input type="number" id="umidade_minima" name="umidade_minima" class="form-control" step="0.01" value="{{ old('umidade_minima') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="umidade_maxima">Umidade Máxima:</label>
+                            <input type="number" id="umidade_maxima" name="umidade_maxima" class="form-control" step="0.01" value="{{ old('umidade_maxima') }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+),
+formulario_criar_agendamento_sensor.blade.php(@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">Criar Agendamento para Sensor: {{ $sensor->nome }}</div>
+
+                <div class="card-body">
+                    <!-- Exibindo mensagens de sucesso ou erro -->
+                    @if (session('success'))
+                        <div class="alert alert-success">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('agendamento.store') }}">
+                        @csrf
+
+                        <!-- Campo para o ID do sensor -->
+                        <input type="hidden" name="sensor_id" value="{{ $sensor->id }}">
+
+                        <!-- Campo para Horário de Início -->
+                        <div class="form-group">
+                            <label for="horario_inicio">Horário de Início:</label>
+                            <input type="time" class="form-control @error('horario_inicio') is-invalid @enderror" id="horario_inicio" name="horario_inicio" value="{{ old('horario_inicio') }}" required>
+                            @error('horario_inicio')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+
+                        <!-- Campo para Duração -->
+                        <div class="form-group">
+                            <label for="duracao">Duração (em minutos):</label>
+                            <input type="number" class="form-control @error('duracao') is-invalid @enderror" id="duracao" name="duracao" value="{{ old('duracao') }}" required>
+                            @error('duracao')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+
+                        <!-- Campo para Seleção dos Dias da Semana -->
+                        <div class="form-group">
+                            <label for="dia_da_semana">Dias da Semana:</label><br>
+                            @foreach(['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'] as $dia)
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="{{ $dia }}" name="dia_da_semana[]" value="{{ $dia }}" {{ in_array($dia, old('dia_da_semana', [])) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="{{ $dia }}">{{ ucfirst($dia) }}</label>
+                                </div>
+                            @endforeach
+                            @error('dia_da_semana')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+
+                        <!-- Botão de Criação do Agendamento -->
+                        <button type="submit" class="btn btn-primary">Criar Agendamento</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+),
+lista_agendamentos_sensor.blade.php(@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    Agendamentos do Sensor: {{ $sensor->descricao }}
+                    <!-- Botão de Voltar -->
+                    <a href="{{ route('sensor.listar') }}" class="btn btn-secondary float-right">Voltar</a>
+                </div>
+
+                <div class="card-body">
+                    <!-- Exibir mensagem de sucesso, se houver -->
+                    @if (session('success'))
+                        <div class="alert alert-success">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    <!-- Botão para criar novo agendamento -->
+                    <div class="mb-3">
+                        <a href="{{ route('sensor.agendar', $sensor->id) }}" class="btn btn-success">Criar Novo Agendamento</a>
+                    </div>
+
+                    <!-- Tabela para listar agendamentos -->
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Hora de Início</th>
+                                <th>Duração</th>
+                                <th>Dias da Semana</th>
+                                <th>Ações</th> <!-- Nova coluna para o botão de exclusão -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($agendamentos as $agendamento)
+                            <tr>
+                                <!-- Hora de início -->
+                                <td>{{ \Carbon\Carbon::parse($agendamento->horario_inicio)->format('H:i') }}</td>
+                                
+                                <!-- Duração -->
+                                <td>
+                                    @php
+                                        // Converte a duração para minutos e segundos
+                                        $duracao = \Carbon\Carbon::parse($agendamento->duracao);
+                                        $totalSegundos = $duracao->hour * 3600 + $duracao->minute * 60 + $duracao->second;
+                                        $minutos = floor($totalSegundos / 60);
+                                        $segundos = $totalSegundos % 60;
+                                    @endphp
+                                    {{ $minutos }}m {{ str_pad($segundos, 2, '0', STR_PAD_LEFT) }}s
+                                </td>
+                                
+                                <!-- Dias da Semana -->
+                                <td>
+                                    @foreach (json_decode($agendamento->dia_semana) as $dia)
+                                        {{ ucfirst($dia) }}<br>
+                                    @endforeach
+                                </td>
+
+                                <!-- Botão de exclusão -->
+                                <td>
+                                    <form action="{{ route('agendamento.destroy', $agendamento->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este agendamento?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+),
+Agora vou enviar o arquivo .env:
+.env(APP_NAME=Laravel
+APP_ENV=local
+APP_KEY=base64:anhqSYxd1VWJd3JUGMXYhh1ocpJjqc/mtyoPRoxhZBc=
+APP_DEBUG=true
+APP_URL=http://localhost
+
+LOG_CHANNEL=stack
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=sistema_irrigacao
+DB_USERNAME=root
+DB_PASSWORD=
+
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_HOST=
+PUSHER_PORT=443
+PUSHER_SCHEME=https
+PUSHER_APP_CLUSTER=mt1
+
+VITE_APP_NAME="${APP_NAME}"
+VITE_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+VITE_PUSHER_HOST="${PUSHER_HOST}"
+VITE_PUSHER_PORT="${PUSHER_PORT}"
+VITE_PUSHER_SCHEME="${PUSHER_SCHEME}"
+VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+
+API_URL=https://api.api-ninjas.com/v1/geocoding
+API_KEY=jX1QFBlpKRVZD9H9veZ/DA==6bCZJRVV49zHefh4).
+
+chatgpt, agora que vc possui todos os codigos principais do meu trabalho, me ajude a construir passo a passo um relatorio bem completo como o professor pediu.
+inclusive vou enviar a descrição do trabalho que o professor pediu para vc ver se meu trabalho atende a todos os requisitos que o professor pediu.
+e lembrese, esse é um trabalho da disciplina de programação para internet, nao é o meu tcc final, é apenas baseado na interface que pretendo desenvolver para meu tcc.
+
+descrição do trabalho passado pelo professor:
+Crie um projeto web que englobe ao menos 10 rotas, sendo que uma página deve conter alguma aplicação API e em outra uma requisição assíncrona. O site deve conter banco de dados e algum formulário. O projeto em si é da tua escolha, sugiro algo que esteja relacionado ao teu trabalho ou monografia. De qualquer forma, eu apresento abaixo algumas ideias para inspiração.
+
+Neste projeto final da disciplina, vocês devem enviar um documento apresentando o projeto de vocês, indicando a ideia geral, as atividades e fluxos de dados. Quero ver ao menos uma UML do site e um projeto MER do banco de dados. O documento deve estar bem formatado (capa + sumário + elementos textuais), com pelo menos umas cinco páginas de corpo do texto. 
+
+É recomendado que vocês criem uma seção no documento para abordar o projeto de layout que vocês querem (ou gostariam de) implementar, se houver imagens ou esboços das janelas, recomendo incluí-las no documento.
+
+A seção final de vocês deve versar sobre um possível cronograma de execução do projeto com estimativas de custo, como se estivessem entregando um orçamento para um cliente.
+
+
+
+Devem ser entregues no trabalho final, um documento PDF abordando o teu projeto e uma pasta zipada contendo o teu projeto em si.
